@@ -103,7 +103,10 @@ public class Xml2RdfConverter {
 	private void toRdf(XmlNode node, final RDFWriter rdfWriter) {
 		// first element, let's create the XmlNode subclass
 		if(node.isNew) {
-			rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, SUB_CLASS_OF, XML_ELEMENT, graphIRI));
+			if(node.parent.isRoot())
+				rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, SUB_CLASS_OF, XML_ELEMENT, graphIRI));
+			else
+				rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, SUB_CLASS_OF, node.parent.class_iri, graphIRI));
 			rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, HAS_NAME, valueFactory.createLiteral(node.name), graphIRI));
 			rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, HAS_XPATH, valueFactory.createLiteral(node.getRelativeXPath()), graphIRI));
 			if(!node.parent.isRoot()) {
