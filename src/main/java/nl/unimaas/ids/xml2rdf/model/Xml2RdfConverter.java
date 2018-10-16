@@ -14,6 +14,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -51,10 +52,7 @@ public class Xml2RdfConverter {
 		this.inputFile = inputFile;
 		this.outputFile = outputFile;
 		this.graphIRI = valueFactory.createIRI(graphUri);
-		if (baseUri.lastIndexOf("/") != baseUri.length()-1) {
-			// Add / at end of base URI
-			baseUri = baseUri + "/";
-		}
+		baseUri = StringUtils.appendIfMissing(baseUri, "/");
 		
 		// Old version: http://ids.unimaas.nl/rdf2xml/model
 		Xml2RdfConverter.modelUri = baseUri + "model/";
