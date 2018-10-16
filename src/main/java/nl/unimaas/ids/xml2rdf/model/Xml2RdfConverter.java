@@ -26,6 +26,9 @@ public class Xml2RdfConverter {
 	static final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 	public static String modelUri;
 	public static String dataUri;
+
+	private final String rdfs = "http://www.w3.org/2000/01/rdf-schema#";
+	private final String rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 	private IRI xmlElement ;
 	private IRI xmlAttribute;
 	                        ;
@@ -35,8 +38,8 @@ public class Xml2RdfConverter {
 	private IRI hasChild;
 	private IRI hasAttribute;
 	                        
-	private IRI subClassOf;
-	private IRI type;
+	private IRI subClassOf = valueFactory.createIRI(rdfs, "subClassOf");
+	private IRI type = valueFactory.createIRI(rdf, "type");;
 	
 	private XmlDocument xmlDocument = null;
 	private XmlNode xmlNode = null;
@@ -48,8 +51,14 @@ public class Xml2RdfConverter {
 		this.inputFile = inputFile;
 		this.outputFile = outputFile;
 		this.graphIRI = valueFactory.createIRI(graphUri);
-		Xml2RdfConverter.modelUri = baseUri + "/model";
-		Xml2RdfConverter.dataUri= baseUri + "/data";
+		if (baseUri.lastIndexOf("/") != baseUri.length()-1) {
+			// Add / at end of base URI
+			baseUri = baseUri + "/";
+		}
+		
+		// Old version: http://ids.unimaas.nl/rdf2xml/model
+		Xml2RdfConverter.modelUri = baseUri + "model/";
+		Xml2RdfConverter.dataUri= baseUri + "data/";
 		
 	 	xmlElement = valueFactory.createIRI(Xml2RdfConverter.modelUri, "XmlNode");
 	 	xmlAttribute = valueFactory.createIRI(Xml2RdfConverter.modelUri, "XmlAttribute");
