@@ -36,7 +36,7 @@ public class Xml2rdf {
 			if(!new File(outputFile.getAbsolutePath()).getParentFile().canWrite())
 				throw new IllegalArgumentException("Can not write to directory of output file.");
 			
-			new Xml2RdfConverter(inputFile, outputFile, cli.graphUri)
+			new Xml2RdfConverter(inputFile, outputFile, cli.baseUri, cli.graphUri)
 				.doWork()
 				.structuredPrint();
 		} catch (MissingParameterException | IllegalArgumentException | XMLStreamException | UnsupportedRDFormatException | IOException e) {
