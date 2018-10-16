@@ -5,8 +5,8 @@
 This tool converts any xml file into a generic rdf model.
 ## RDF model
 ```shell
-PREFIX x2rm: <http://ids.unimaas.nl/rdf2xml/model#>
-PREFIX x2rd: <http://ids.unimaas.nl/rdf2xml/data/>
+PREFIX x2rm: <http://data2services/model#>
+PREFIX x2rd: <http://data2services/data/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX owl:  <http://www.w3.org/2002/07/owl#>
 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -54,14 +54,25 @@ docker build -t xml2rdf .
 ## Usage
 ```shell
 docker run --rm -it xml2rdf -?
+
+Usage: xml2rdf [-?] [-b=<baseUri>] [-g=<graphUri>] -i=<inputFilePath>
+               -o=<outputFilePath>
+  -?, --help                display a help message
+  -b, --baseuri=<baseUri>   Base URI. Default is http://data2services/
+  -g, --graphuri=<graphUri> Graph URI. Default is http://data2services/xml2rdf/graph
+  -i, --inputfile=<inputFilePath>
+                            Path to input file (.xml or .xml.gz)
+  -o, --outputfile=<outputFilePath>
+                            Path to output file (.nq or .nq.gz)
 ```
 ## Run
 
 ### Linux / OSX
 ```shell
-docker run --rm -it -v /data/xml2rdfdata:/data xml2rdf  -i "/data/input.xml.gz" -o "/data/output.nq.gz" -g "http://kraken/xml2rdf/graph"
+docker run --rm -it -v /data/xml2rdfdata:/data xml2rdf  -i "/data/input.xml.gz" -o "/data/output.nq.gz" -b "http://data2services/" -g "http://data2services/xml2rdf/graph"
 ```
 ### Windows
 ```shell
-docker run --rm -it -v c:/data/xml2rdfdata:/data xml2rdf  -i "/data/input.xml.gz" -o "/data/output.nq.gz" -g "http://kraken/xml2rdf/graph"
+docker run --rm -it -v c:/data/xml2rdfdata:/data xml2rdf  -i "/data/input.xml.gz" -o "/data/output.nq.gz" -b "http://data2services/" -g "http://data2services/xml2rdf/graph"
 ```
+
