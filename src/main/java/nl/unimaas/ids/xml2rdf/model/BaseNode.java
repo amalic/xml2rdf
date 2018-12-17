@@ -67,4 +67,8 @@ abstract class BaseNode {
 			return "";
 	}
 	
+	String getName() {
+		return name;
+	}
+	
 }

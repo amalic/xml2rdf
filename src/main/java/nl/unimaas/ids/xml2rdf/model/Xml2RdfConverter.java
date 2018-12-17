@@ -14,6 +14,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -24,23 +25,23 @@ import org.eclipse.rdf4j.rio.UnsupportedRDFormatException;
 
 public class Xml2RdfConverter {
 	static final ValueFactory valueFactory = SimpleValueFactory.getInstance();
-	public static final String X2RM = "http://ids.unimaas.nl/rdf2xml/model/";
-	public static final String X2RD = "http://ids.unimaas.nl/rdf2xml/data/";
-	public static final String RDFS = "http://www.w3.org/2000/01/rdf-schema#";
-	public static final String RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
-	
-	public static final IRI XML_ELEMENT = valueFactory.createIRI(X2RM, "XmlNode");
-	public static final IRI XML_ATTRIBUTE = valueFactory.createIRI(X2RM, "XmlAttribute");
-	
-	public static final IRI HAS_NAME = valueFactory.createIRI(X2RM, "hasName");
-	public static final IRI HAS_VALUE = valueFactory.createIRI(X2RM, "hasValue");
-	public static final IRI HAS_XPATH = valueFactory.createIRI(X2RM, "hasXPath");
-	public static final IRI HAS_CHILD = valueFactory.createIRI(X2RM, "hasChild");
-	public static final IRI HAS_ATTRIBUTE = valueFactory.createIRI(X2RM, "hasAttribute");
-	
-	public static final IRI SUB_CLASS_OF = valueFactory.createIRI(RDFS, "subClassOf");
-	public static final IRI TYPE = valueFactory.createIRI(RDF, "type");
-	
+	public static String modelUri;
+	public static String dataUri;
+	public static String vocabUri;
+
+	private final String rdfs = "http://www.w3.org/2000/01/rdf-schema#";
+	private final String rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+	private IRI xmlElement ;
+	private IRI xmlAttribute;
+	                        ;
+	private IRI hasName;
+	private IRI hasValue;
+	private IRI hasXPath;
+	private IRI hasChild;
+	private IRI hasAttribute;
+	                        
+	private IRI subClassOf = valueFactory.createIRI(rdfs, "subClassOf");
+	private IRI type = valueFactory.createIRI(rdf, "type");;
 	
 	private XmlDocument xmlDocument = null;
 	private XmlNode xmlNode = null;
@@ -48,11 +49,25 @@ public class Xml2RdfConverter {
 	private File outputFile = null;
 	private IRI graphIRI = null;
 	
-	public Xml2RdfConverter(File inputFile, File outputFile, String graphUri) {
+	public Xml2RdfConverter(File inputFile, File outputFile, String baseUri, String graphUri) {
 		this.inputFile = inputFile;
 		this.outputFile = outputFile;
-		graphIRI = valueFactory.createIRI(graphUri);
+		this.graphIRI = valueFactory.createIRI(graphUri);
+		baseUri = StringUtils.appendIfMissing(baseUri, "/");
 		
+		// Old version: http://ids.unimaas.nl/rdf2xml/model
+		Xml2RdfConverter.modelUri = baseUri + "model/";
+		Xml2RdfConverter.dataUri= baseUri + "data/";
+		Xml2RdfConverter.vocabUri= baseUri + "vocab/";
+		
+	 	xmlElement = valueFactory.createIRI(Xml2RdfConverter.modelUri, "XmlNode");
+	 	xmlAttribute = valueFactory.createIRI(Xml2RdfConverter.modelUri, "XmlAttribute");
+	 	hasName = valueFactory.createIRI(Xml2RdfConverter.modelUri, "hasName");
+	 	hasValue = valueFactory.createIRI(Xml2RdfConverter.modelUri, "hasValue");
+	   	hasXPath = valueFactory.createIRI(Xml2RdfConverter.modelUri, "hasXPath");
+	   	hasChild = valueFactory.createIRI(Xml2RdfConverter.modelUri, "hasChild");
+	   	hasAttribute = valueFactory.createIRI(Xml2RdfConverter.modelUri, "hasAttribute");
+	  
 		xmlDocument = new XmlDocument();
 		xmlNode = xmlDocument;
 	}
@@ -103,42 +118,49 @@ public class Xml2RdfConverter {
 	private void toRdf(XmlNode node, final RDFWriter rdfWriter) {
 		// first element, let's create the XmlNode subclass
 		if(node.isNew) {
+			/* Instead of using 
+			 * subClassOf can be either XmlNode, Attribute or . RdfType is the XPath. And atm we use hasChildren to point to child nodes
+			 * We want to change the hasChildren to use directly the node label as predicate 
+			 * Use a different base URL for predicate (http://data2services/vocab instead of model for example)
 			if(node.parent.isRoot())
-				rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, SUB_CLASS_OF, XML_ELEMENT, graphIRI));
+				rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, subClassOf, xmlElement, graphIRI));
 			else
-				rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, SUB_CLASS_OF, node.parent.class_iri, graphIRI));
-			rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, HAS_NAME, valueFactory.createLiteral(node.name), graphIRI));
-			rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, HAS_XPATH, valueFactory.createLiteral(node.getRelativeXPath()), graphIRI));
+				rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, subClassOf, node.parent.class_iri, graphIRI)); */
+			rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, subClassOf, xmlElement, graphIRI));
+			rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, hasName, valueFactory.createLiteral(node.name), graphIRI));
+			rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, hasXPath, valueFactory.createLiteral(node.getRelativeXPath()), graphIRI));
 			if(!node.parent.isRoot()) {
-				rdfWriter.handleStatement(valueFactory.createStatement(node.parent.class_iri, HAS_CHILD, node.class_iri, graphIRI));
+				rdfWriter.handleStatement(valueFactory.createStatement(node.parent.class_iri, hasChild, node.class_iri, graphIRI));
+				// replace hasChild by a predicate based on the XML label
+				rdfWriter.handleStatement(valueFactory.createStatement(node.parent.class_iri, hasChild, node.class_iri, graphIRI));
 			}
 			node.isNew = false;
 		}
 		// let's check for new attributes
 		for(XmlAttribute attribute : node.attributes.values()) {
 			if(attribute.isNew) {
-				rdfWriter.handleStatement(valueFactory.createStatement(attribute.class_iri, SUB_CLASS_OF, XML_ATTRIBUTE, graphIRI));
-				rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, HAS_ATTRIBUTE, attribute.class_iri, graphIRI));
-				rdfWriter.handleStatement(valueFactory.createStatement(attribute.class_iri, HAS_NAME, valueFactory.createLiteral(attribute.name), graphIRI));
-				rdfWriter.handleStatement(valueFactory.createStatement(attribute.class_iri, HAS_XPATH, valueFactory.createLiteral(attribute.getRelativeXPath()), graphIRI));
+				rdfWriter.handleStatement(valueFactory.createStatement(attribute.class_iri, subClassOf, xmlAttribute, graphIRI));
+				rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, hasAttribute, attribute.class_iri, graphIRI));
+				rdfWriter.handleStatement(valueFactory.createStatement(attribute.class_iri, hasName, valueFactory.createLiteral(attribute.name), graphIRI));
+				rdfWriter.handleStatement(valueFactory.createStatement(attribute.class_iri, hasXPath, valueFactory.createLiteral(attribute.getRelativeXPath()), graphIRI));
 				attribute.isNew = false;
 			}
 		}
 		
 		// now the data
-		rdfWriter.handleStatement(valueFactory.createStatement(node.iri, TYPE, node.class_iri, graphIRI));
+		rdfWriter.handleStatement(valueFactory.createStatement(node.iri, type, node.class_iri, graphIRI));
 		if(!node.parent.isRoot())
-			rdfWriter.handleStatement(valueFactory.createStatement(node.parent.iri, HAS_CHILD, node.iri, graphIRI));
+			rdfWriter.handleStatement(valueFactory.createStatement(node.parent.iri, hasChild, node.iri, graphIRI));
 		if(node.value != null)
-			rdfWriter.handleStatement(valueFactory.createStatement(node.iri, HAS_VALUE, valueFactory.createLiteral(node.value), graphIRI));
-		rdfWriter.handleStatement(valueFactory.createStatement(node.iri, HAS_XPATH, valueFactory.createLiteral(node.getAbsoluteXpath()), graphIRI));
+			rdfWriter.handleStatement(valueFactory.createStatement(node.iri, hasValue, valueFactory.createLiteral(node.value), graphIRI));
+		rdfWriter.handleStatement(valueFactory.createStatement(node.iri, hasXPath, valueFactory.createLiteral(node.getAbsoluteXpath()), graphIRI));
 		
 		for(XmlAttribute attribute : node.actualAttributes.values()) {
-			rdfWriter.handleStatement(valueFactory.createStatement(node.iri, HAS_ATTRIBUTE, attribute.iri, graphIRI));
-			rdfWriter.handleStatement(valueFactory.createStatement(attribute.iri, TYPE , attribute.class_iri, graphIRI));
-			rdfWriter.handleStatement(valueFactory.createStatement(attribute.iri, HAS_XPATH, valueFactory.createLiteral(attribute.getAbsoluteXpath()), graphIRI));
+			rdfWriter.handleStatement(valueFactory.createStatement(node.iri, hasAttribute, attribute.iri, graphIRI));
+			rdfWriter.handleStatement(valueFactory.createStatement(attribute.iri, type , attribute.class_iri, graphIRI));
+			rdfWriter.handleStatement(valueFactory.createStatement(attribute.iri, hasXPath, valueFactory.createLiteral(attribute.getAbsoluteXpath()), graphIRI));
 			if(attribute.value != null && !attribute.value.isEmpty()) {
-				rdfWriter.handleStatement(valueFactory.createStatement(attribute.iri, HAS_VALUE, valueFactory.createLiteral(attribute.value), graphIRI));
+				rdfWriter.handleStatement(valueFactory.createStatement(attribute.iri, hasValue, valueFactory.createLiteral(attribute.value), graphIRI));
 			}
 			attribute.isNew = false;
 		}

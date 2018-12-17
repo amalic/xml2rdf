@@ -25,12 +25,12 @@ class XmlNode extends BaseNode {
 			child = new XmlNode();
 			child.parent = this;
 			child.name = name;			
-			child.class_iri = valueFactory.createIRI(Xml2RdfConverter.X2RM, child.getRelativeXPath().substring(1));
+			child.class_iri = valueFactory.createIRI(Xml2RdfConverter.modelUri, child.getRelativeXPath().substring(1));
 			childs.put(name, child);
 		}
 		child.registerValue(value, false);
 		child.actualAttributes.clear();
-		child.iri = valueFactory.createIRI(Xml2RdfConverter.X2RD, UUID.randomUUID().toString());
+		child.iri = valueFactory.createIRI(Xml2RdfConverter.dataUri, UUID.randomUUID().toString());
 		return child;
 	}
 	
@@ -45,11 +45,11 @@ class XmlNode extends BaseNode {
 			attribute = new XmlAttribute();
 			attribute.parent = this;
 			attribute.name = name;
-			attribute.class_iri = valueFactory.createIRI(Xml2RdfConverter.X2RM, attribute.getRelativeXPath().substring(1));
+			attribute.class_iri = valueFactory.createIRI(Xml2RdfConverter.modelUri, attribute.getRelativeXPath().substring(1));
 			attributes.put(name, attribute);
 		}
 		attribute.registerValue(value, false);
-		attribute.iri = valueFactory.createIRI(Xml2RdfConverter.X2RD, UUID.randomUUID().toString());
+		attribute.iri = valueFactory.createIRI(Xml2RdfConverter.dataUri, UUID.randomUUID().toString());
 		actualAttributes.put(name, attribute);
 		return attribute;
 	}
