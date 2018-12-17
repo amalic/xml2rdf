@@ -131,8 +131,6 @@ public class Xml2RdfConverter {
 			rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, hasXPath, valueFactory.createLiteral(node.getRelativeXPath()), graphIRI));
 			if(!node.parent.isRoot()) {
 				rdfWriter.handleStatement(valueFactory.createStatement(node.parent.class_iri, hasChild, node.class_iri, graphIRI));
-				// replace hasChild by a predicate based on the XML label
-				rdfWriter.handleStatement(valueFactory.createStatement(node.parent.class_iri, hasChild, node.class_iri, graphIRI));
 			}
 			node.isNew = false;
 		}
@@ -150,7 +148,7 @@ public class Xml2RdfConverter {
 		// now the data
 		rdfWriter.handleStatement(valueFactory.createStatement(node.iri, type, node.class_iri, graphIRI));
 		if(!node.parent.isRoot())
-			rdfWriter.handleStatement(valueFactory.createStatement(node.parent.iri, hasChild, node.iri, graphIRI));
+			rdfWriter.handleStatement(valueFactory.createStatement(node.parent.iri, valueFactory.createIRI(Xml2RdfConverter.vocabUri, node.name), node.iri, graphIRI));
 		if(node.value != null)
 			rdfWriter.handleStatement(valueFactory.createStatement(node.iri, hasValue, valueFactory.createLiteral(node.value), graphIRI));
 		rdfWriter.handleStatement(valueFactory.createStatement(node.iri, hasXPath, valueFactory.createLiteral(node.getAbsoluteXpath()), graphIRI));
