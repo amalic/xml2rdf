@@ -118,14 +118,6 @@ public class Xml2RdfConverter {
 	private void toRdf(XmlNode node, final RDFWriter rdfWriter) {
 		// first element, let's create the XmlNode subclass
 		if(node.isNew) {
-			/* Instead of using 
-			 * subClassOf can be either XmlNode, Attribute or . RdfType is the XPath. And atm we use hasChildren to point to child nodes
-			 * We want to change the hasChildren to use directly the node label as predicate 
-			 * Use a different base URL for predicate (http://data2services/vocab instead of model for example)
-			if(node.parent.isRoot())
-				rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, subClassOf, xmlElement, graphIRI));
-			else
-				rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, subClassOf, node.parent.class_iri, graphIRI)); */
 			rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, subClassOf, xmlElement, graphIRI));
 			rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, hasName, valueFactory.createLiteral(node.name), graphIRI));
 			rdfWriter.handleStatement(valueFactory.createStatement(node.class_iri, hasXPath, valueFactory.createLiteral(node.getRelativeXPath()), graphIRI));
